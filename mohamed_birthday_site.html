@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, Mohamed!</title>
+    <style>
+        /* BASE STYLES */
+        body {
+            background-color: #f5f1e7; /* Beige background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            perspective: 1500px; /* For 3D transformation */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            overflow: hidden; /* Hide potential balloon overflow */
+        }
+
+        /* FESTIVE LAYER (Balloons) */
+        #festive {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .balloon {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            border-radius: 50%;
+            /* Make sure balloons start low */
+            transform: translateY(100vh); 
+            animation: float linear infinite;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            opacity: 0.8;
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            width: 1px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.5); /* String color */
+            transform: translateX(-50%);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh);
+            }
+            100% {
+                transform: translateY(-50px);
+            }
+        }
+
+        /* BOOK CONTAINER */
+        #book {
+            position: relative;
+            width: 50vw; /* Responsive width */
+            max-width: 600px;
+            height: 35vw; /* Maintain aspect ratio */
+            max-height: 400px;
+            perspective: 1500px;
+            /* Box shadow for the entire closed book's edge */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
+        }
+
+        /* INNER PAGES (Visible when open) */
+        #inside {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: row;
+            border-radius: 5px;
+        }
+
+        #left, #right {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: #ffffff;
+        }
+
+        #left {
+            /* Subtle shadow for the spine */
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15); 
+        }
+
+        #right {
+            text-align: center;
+        }
+
+        img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #right p {
+            font-size: 1.4em;
+            line-height: 1.5;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* FRONT COVER (The clickable, animating part) */
+        #cover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #d1b89d; /* Book cover color */
+            transition: transform 1s ease-out;
+            transform-style: preserve-3d;
+            transform-origin: left;
+            z-index: 10;
+            cursor: pointer;
+            border-radius: 5px;
+            /* Shadow to lift the cover off the book */
+            box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4); 
+        }
+
+        /* Cover Content (Front face) */
+        #cover .front {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #d1b89d; /* Match cover color */
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #4a2d1f; /* Dark text for contrast */
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 800;
+        }
+
+        p {
+            font-size: 1.1em;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        /* OPEN ANIMATION */
+        .open {
+            /* 3D flip */
+            transform: rotateY(-170deg); 
+            /* Remove lift shadow when open */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
+        }
+
+        /* RESPONSIVENESS */
+        @media (max-width: 768px) {
+            #book {
+                width: 80vw;
+                height: 55vw;
+                max-height: none;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            #right p {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="festive"></div>
+
+    <div id="book">
+        <div id="inside">
+            <div id="left">
+                <img src="mohamed.jpg" alt="A photo for Mohamed">
+            </div>
+            <div id="right">
+                <p>
+                    Wishing you the **best year ever**, full of **happiness**, **success**, and **amazing memories!**
+                </p>
+            </div>
+        </div>
+
+        <div id="cover">
+            <div class="front">
+                <h1>Happy Birthday Mohamed</h1>
+                <p>Click to open your gift!</p>
+            </div>
+        </div>
+    </div>
+
+    <audio id="song" src="song.mp3" preload="auto"></audio>
+
+    <script>
+        const cover = document.getElementById('cover');
+        const song = document.getElementById('song');
+        let cardOpened = false;
+
+        // Attach the click listener directly to the cover
+        cover.addEventListener('click', function() {
+            if (cardOpened) {
+                return;
+            }
+
+            // 1. Animate the cover open
+            cover.classList.add('open');
+            cardOpened = true;
+
+            // 2. Play the song (requires user interaction)
+            song.play().catch(error => {
+                console.error("Audio playback failed:", error);
+                // Optionally add a fallback message here
+            });
+        });
+
+        // Add floating balloons (Festive animation)
+        const festive = document.getElementById('festive');
+        const colors = ['#ff6f69', '#ffeead', '#96ded1', '#4b8a8b', '#c15555']; // Festive colors
+
+        for (let i = 0; i < 20; i++) {
+            const balloon = document.createElement('div');
+            balloon.classList.add('balloon');
+            
+            // Randomize styling
+            balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            balloon.style.left = Math.random() * 100 + '%';
+            balloon.style.animationDuration = Math.random() * 10 + 10 + 's';
+            balloon.style.animationDelay = Math.random() * 5 + 's';
+            balloon.style.width = Math.random() * 15 + 35 + 'px';
+            balloon.style.height = Math.random() * 20 + 45 + 'px';
+
+            festive.appendChild(balloon);
+        }
+    </script>
+</body>
+</html>
