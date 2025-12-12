@@ -3,262 +3,731 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday, Mohamed!</title>
+    <title>Happy Birthday Mohamed</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
     <style>
-        /* BASE STYLES */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: #f5f1e7; /* Beige background */
+            background: linear-gradient(135deg, #f5f1e7 0%, #e8dcc9 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            perspective: 1500px; /* For 3D transformation */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            position: relative;
-            overflow: hidden; /* Hide potential balloon overflow */
+            font-family: 'Playfair Display', serif;
+            perspective: 2500px;
+            overflow: hidden;
+            padding: 20px;
         }
 
-        /* FESTIVE LAYER (Balloons) */
-        #festive {
-            position: absolute;
+        /* Floating balloons */
+        #balloons {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            pointer-events: none;
+            z-index: 5;
             overflow: hidden;
-            z-index: -1;
         }
-
         .balloon {
             position: absolute;
-            width: 30px;
-            height: 40px;
+            width: 50px;
+            height: 65px;
             border-radius: 50%;
-            /* Make sure balloons start low */
-            transform: translateY(100vh); 
-            animation: float linear infinite;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
-            opacity: 0.8;
+            bottom: -100px;
+            animation: rise 18s linear infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            will-change: transform, opacity;
+            transform: translateZ(0);
         }
-
         .balloon::after {
             content: '';
             position: absolute;
-            bottom: -15px;
+            bottom: -120px;
             left: 50%;
-            width: 1px;
-            height: 15px;
-            background: rgba(0, 0, 0, 0.5); /* String color */
+            width: 2px;
+            height: 120px;
+            background: #444;
             transform: translateX(-50%);
         }
-
-        @keyframes float {
+        @keyframes rise {
             0% {
-                transform: translateY(100vh);
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 1;
             }
-            100% {
-                transform: translateY(-50px);
+            70% {
+                opacity: 0.9;
+            }
+            100% { 
+                transform: translateY(-120vh) translateX(60px) rotate(20deg); 
+                opacity: 0;
             }
         }
 
-        /* BOOK CONTAINER */
-        #book {
+        /* The entire book */
+        #book-container {
             position: relative;
-            width: 50vw; /* Responsive width */
-            max-width: 600px;
-            height: 35vw; /* Maintain aspect ratio */
-            max-height: 400px;
-            perspective: 1500px;
-            /* Box shadow for the entire closed book's edge */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
+            width: 92vw;
+            max-width: 720px;
+            height: 62vw;
+            max-height: 520px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            z-index: 10;
         }
 
-        /* INNER PAGES (Visible when open) */
-        #inside {
+        /* Pages that appear when open */
+        #pages {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
+            right: 0;
+            bottom: 0;
+            background: #fffef7;
+            border-radius: 12px;
             display: flex;
-            flex-direction: row;
-            border-radius: 5px;
+            box-shadow: 
+                inset 0 0 60px rgba(0,0,0,0.15),
+                0 25px 80px rgba(0,0,0,0.5);
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.5s;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        #left, #right {
+        #left-page, #right-page {
             width: 50%;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        #left-page  { 
+            background: linear-gradient(to right, #fdfbfb 0%, #fffef7 20%);
+        }
+        #right-page { 
+            background: linear-gradient(to left, #fdfbfb 0%, #fffef7 20%);
+        }
+
+        .image-container {
+            width: 100%;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            background: #ffffff;
+            position: relative;
         }
 
-        #left {
-            /* Subtle shadow for the spine */
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15); 
+        #left-page img {
+            max-width: 96%;
+            max-height: 96%;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            object-fit: cover;
+            transition: transform 0.3s ease;
         }
 
-        #right {
+        #left-page img:hover {
+            transform: scale(1.02);
+        }
+
+        .fallback-image {
+            width: 80%;
+            height: 80%;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
             text-align: center;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
 
-        img {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-            border-radius: 5px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        #right-page p {
+            font-size: clamp(1.2rem, 4vw, 1.85rem);
+            line-height: 1.6;
+            text-align: center;
+            color: #444;
+            margin: 0;
+            padding: 20px;
+        }
+        #right-page strong {
+            color: #b8860b;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: inline-block;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        #right-page strong:hover {
+            transform: translateY(-5px);
         }
 
-        #right p {
-            font-size: 1.4em;
-            line-height: 1.5;
-            color: #333;
-            font-weight: 500;
-        }
-
-        /* FRONT COVER (The clickable, animating part) */
+        /* The leather cover - FIXED VERSION */
         #cover {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: #d1b89d; /* Book cover color */
-            transition: transform 1s ease-out;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #8b4513 0%, #a0522d 60%, #cd853f 100%);
+            border-radius: 12px 4px 4px 12px;
+            transform-origin: left center;
+            transition: transform 1.8s cubic-bezier(0.6, 0.05, 0.4, 0.95);
             transform-style: preserve-3d;
-            transform-origin: left;
+            box-shadow: 
+                20px 20px 60px rgba(0,0,0,0.6),
+                inset -10px 0 30px rgba(0,0,0,0.4);
             z-index: 10;
             cursor: pointer;
-            border-radius: 5px;
-            /* Shadow to lift the cover off the book */
-            box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4); 
         }
 
-        /* Cover Content (Front face) */
-        #cover .front {
+        #cover:hover {
+            transform: scale(1.02) translateZ(10px);
+        }
+
+        /* Fixed opening animation */
+        #cover.opened {
+            transform: rotateY(-168deg) translateZ(0) translateX(-20px);
+            pointer-events: none;
+            box-shadow: 
+                -20px 20px 80px rgba(0,0,0,0.7),
+                inset 10px 0 30px rgba(0,0,0,0.4);
+            z-index: 1;
+        }
+
+        /* Make pages visible when cover is opened */
+        #cover.opened + #pages {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 5;
+        }
+
+        /* Front of the cover */
+        .cover-face {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: #d1b89d; /* Match cover color */
+            right: 0;
+            bottom: 0;
             backface-visibility: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: #ffd700;
             text-align: center;
-            color: #4a2d1f; /* Dark text for contrast */
-            padding: 20px;
+            padding: 30px;
+            border-radius: 12px;
         }
-
-        h1 {
-            font-size: 2.5em;
-            margin: 0;
-            font-weight: 800;
+        .cover-face h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(3rem, 11vw, 4.5rem);
+            margin: 0 0 15px 0;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+            line-height: 1.2;
         }
-
-        p {
-            font-size: 1.1em;
-            margin: 10px 0;
+        .cover-face p {
+            font-size: clamp(1.2rem, 5vw, 1.6rem);
             font-style: italic;
+            opacity: 0.95;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+            margin-top: 20px;
         }
 
-        /* OPEN ANIMATION */
-        .open {
-            /* 3D flip */
-            transform: rotateY(-170deg); 
-            /* Remove lift shadow when open */
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
+        /* Spine (visible when opening) */
+        #cover::before {
+            content: '';
+            position: absolute;
+            left: 0; 
+            top: 6%;
+            width: 60px;
+            height: 88%;
+            background: linear-gradient(to right, #654321, #8b4513);
+            border-radius: 12px;
+            box-shadow: 
+                inset 15px 0 25px rgba(0,0,0,0.6),
+                8px 0 20px rgba(0,0,0,0.5);
+            transform: translateZ(20px);
         }
 
-        /* RESPONSIVENESS */
+        /* Inside of the cover (back side when flipped) */
+        .cover-back {
+            background: linear-gradient(135deg, #654321 0%, #8b4513 100%);
+            transform: rotateY(180deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cover-back::before {
+            content: '🎁';
+            font-size: 4rem;
+            opacity: 0.7;
+        }
+
+        /* Message after opening */
+        #message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #8b4513;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.8s ease 2s, transform 0.3s ease;
+            z-index: 20;
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        #message:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        #cover.opened ~ #message {
+            opacity: 1;
+        }
+
+        /* Audio controls */
+        #audio-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .audio-btn {
+            background: rgba(255, 215, 0, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            background: #ffd700;
+        }
+
+        .audio-btn:focus {
+            outline: 3px solid #8b4513;
+            outline-offset: 2px;
+        }
+
+        #volume-slider {
+            width: 100px;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.3s ease;
+        }
+
+        #audio-controls:hover #volume-slider,
+        #volume-slider:focus {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Accessibility improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles for keyboard navigation */
+        #cover:focus {
+            outline: 3px solid #ffd700;
+            outline-offset: 4px;
+        }
+
+        /* Responsive adjustments */
         @media (max-width: 768px) {
-            #book {
-                width: 80vw;
-                height: 55vw;
-                max-height: none;
+            #book-container {
+                height: 70vw;
+                max-height: 400px;
             }
-            h1 {
-                font-size: 2em;
+            
+            #left-page, #right-page {
+                padding: 20px 15px;
             }
-            #right p {
-                font-size: 1.2em;
+            
+            #cover::before {
+                width: 40px;
             }
+            
+            #message {
+                font-size: 1.5rem;
+                padding: 12px 24px;
+                bottom: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .cover-face h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cover-face p {
+                font-size: 1.2rem;
+            }
+            
+            #audio-controls {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .audio-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            #volume-slider {
+                width: 80px;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #f5f1e7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: #8b4513;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <div id="festive"></div>
 
-    <div id="book">
-        <div id="inside">
-            <div id="left">
-                <img src="mohamed.jpg" alt="A photo for Mohamed">
+    <div class="loading" id="loading">Preparing your birthday surprise...</div>
+
+    <div id="balloons"></div>
+
+    <div id="book-container">
+        <!-- Cover comes FIRST in HTML -->
+        <div id="cover" role="button" tabindex="0" aria-label="Open birthday card for Mohamed">
+            <div class="cover-face">
+                <h1>Happy Birthday<br>Mohamed</h1>
+                <p>Click or press Enter to open your gift</p>
             </div>
-            <div id="right">
+            <div class="cover-face cover-back" aria-hidden="true"></div>
+        </div>
+        
+        <!-- Pages come AFTER cover in HTML (important for + selector to work) -->
+        <div id="pages">
+            <div id="left-page">
+                <div class="image-container">
+                    <!-- Image will be loaded by JavaScript -->
+                </div>
+            </div>
+            <div id="right-page">
                 <p>
-                    Wishing you the **best year ever**, full of **happiness**, **success**, and **amazing memories!**
+                    محمد <strong>best year ever</strong>,<br>
+                    full of <strong>happiness</strong>,<br>
+                    <strong>success</strong>,<br>
+                    and <strong>amazing memories</strong>!
                 </p>
             </div>
         </div>
-
-        <div id="cover">
-            <div class="front">
-                <h1>Happy Birthday Mohamed</h1>
-                <p>Click to open your gift!</p>
-            </div>
-        </div>
+        
+        <div id="message">🎂 Make a wish! 🎂</div>
     </div>
 
-    <audio id="song" src="song.mp3" preload="auto"></audio>
+    <div id="audio-controls">
+        <button id="mute-btn" class="audio-btn" aria-label="Toggle music">
+            <span class="sound-icon">🎵</span>
+            <span class="sr-only">Toggle music</span>
+        </button>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" 
+               aria-label="Volume control">
+    </div>
+
+    <audio id="song" preload="metadata">
+        <source src="song.mp3" type="audio/mpeg">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-happy-birthday-to-you-443.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
 
     <script>
-        const cover = document.getElementById('cover');
-        const song = document.getElementById('song');
-        let cardOpened = false;
-
-        // Attach the click listener directly to the cover
-        cover.addEventListener('click', function() {
-            if (cardOpened) {
-                return;
-            }
-
-            // 1. Animate the cover open
-            cover.classList.add('open');
-            cardOpened = true;
-
-            // 2. Play the song (requires user interaction)
-            song.play().catch(error => {
-                console.error("Audio playback failed:", error);
-                // Optionally add a fallback message here
-            });
+        // Wait for everything to load
+        window.addEventListener('load', () => {
+            document.getElementById('loading').classList.add('hidden');
+            
+            // Remove loading screen after animation
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 500);
         });
 
-        // Add floating balloons (Festive animation)
-        const festive = document.getElementById('festive');
-        const colors = ['#ff6f69', '#ffeead', '#96ded1', '#4b8a8b', '#c15555']; // Festive colors
+        const container = document.getElementById('book-container');
+        const cover = document.getElementById('cover');
+        const audio = document.getElementById('song');
+        const muteBtn = document.getElementById('mute-btn');
+        const volumeSlider = document.getElementById('volume-slider');
+        const soundIcon = document.querySelector('.sound-icon');
+        const imageContainer = document.querySelector('.image-container');
+        let opened = false;
+        let userInteracted = false;
 
-        for (let i = 0; i < 20; i++) {
-            const balloon = document.createElement('div');
-            balloon.classList.add('balloon');
+        // Initialize audio
+        audio.volume = 0.5;
+        audio.muted = false;
+
+        // Load image immediately
+        function loadBirthdayImage() {
+            const img = new Image();
+            img.src = 'mohamed.jpg';
+            img.alt = 'Mohamed smiling on his birthday';
+            img.id = 'birthday-image';
             
-            // Randomize styling
-            balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            balloon.style.left = Math.random() * 100 + '%';
-            balloon.style.animationDuration = Math.random() * 10 + 10 + 's';
-            balloon.style.animationDelay = Math.random() * 5 + 's';
-            balloon.style.width = Math.random() * 15 + 35 + 'px';
-            balloon.style.height = Math.random() * 20 + 45 + 'px';
-
-            festive.appendChild(balloon);
+            img.onload = function() {
+                console.log('Birthday image loaded successfully');
+                imageContainer.appendChild(img);
+            };
+            
+            img.onerror = function() {
+                console.log('Birthday image failed to load, using fallback');
+                const fallback = document.createElement('div');
+                fallback.className = 'fallback-image';
+                fallback.textContent = '🎉 Happy Birthday Mohamed! 🎂';
+                fallback.setAttribute('aria-label', 'Birthday celebration graphic');
+                imageContainer.appendChild(fallback);
+            };
         }
+
+        // Load the image when page loads
+        loadBirthdayImage();
+
+        // Open book function
+        function openBook() {
+            if (opened) return;
+            
+            opened = true;
+            userInteracted = true;
+            
+            console.log('Opening book...');
+            
+            // Add opened class with a small delay for better animation
+            setTimeout(() => {
+                cover.classList.add('opened');
+                console.log('Cover opened, pages should be visible now');
+            }, 10);
+
+            // Confetti explosion
+            confetti({
+                particleCount: 250,
+                spread: 120,
+                origin: { y: 0.6 },
+                colors: ['#ffd700', '#ff4500', '#ff1493', '#00ced1', '#ff69b4', '#7cfc00']
+            });
+
+            // More confetti after delay
+            setTimeout(() => {
+                confetti({
+                    particleCount: 150,
+                    angle: 60,
+                    spread: 80,
+                    origin: { x: 0, y: 0.6 },
+                    colors: ['#ffd700', '#ff4500', '#ff1493']
+                });
+                confetti({
+                    particleCount: 150,
+                    angle: 120,
+                    spread: 80,
+                    origin: { x: 1, y: 0.6 },
+                    colors: ['#00ced1', '#ff69b4', '#7cfc00']
+                });
+            }, 500);
+
+            // Play birthday song with user interaction context
+            playBirthdaySong();
+        }
+
+        // Audio handling with better error management
+        function playBirthdaySong() {
+            if (!userInteracted) return;
+            
+            audio.play().then(() => {
+                soundIcon.textContent = '🔊';
+                muteBtn.setAttribute('aria-label', 'Mute music');
+                console.log('Audio playing');
+            }).catch((e) => {
+                console.log("Audio play failed:", e);
+                
+                // If local file fails, try fallback
+                if (audio.src.includes('song.mp3')) {
+                    console.log('Trying fallback audio...');
+                    audio.src = 'https://assets.mixkit.co/music/preview/mixkit-happy-birthday-to-you-443.mp3';
+                    setTimeout(() => {
+                        audio.play().catch((err) => {
+                            console.log('Fallback audio also failed:', err);
+                            // If still fails, hide controls
+                            document.getElementById('audio-controls').style.display = 'none';
+                        });
+                    }, 100);
+                }
+            });
+        }
+
+        // Event listeners for opening
+        container.addEventListener('click', openBook);
+        cover.addEventListener('click', function(e) {
+            e.stopPropagation();
+            openBook();
+        });
+        
+        container.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            openBook();
+        }, {passive: false});
+
+        // Audio controls
+        muteBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                soundIcon.textContent = '🔊';
+                muteBtn.setAttribute('aria-label', 'Mute music');
+            } else {
+                audio.pause();
+                soundIcon.textContent = '🔇';
+                muteBtn.setAttribute('aria-label', 'Play music');
+            }
+        });
+
+        // Volume control
+        volumeSlider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        // Floating balloons
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#ff9ff3', '#00b894', '#fd79a8'];
+        for (let i = 0; i < 35; i++) {
+            const b = document.createElement('div');
+            b.className = 'balloon';
+            b.setAttribute('aria-hidden', 'true');
+            
+            // Create gradient background
+            const color1 = colors[Math.floor(Math.random() * colors.length)];
+            const color2 = colors[Math.floor(Math.random() * colors.length)];
+            b.style.background = `radial-gradient(circle at 30% 30%, ${color1}, ${color2})`;
+            
+            b.style.left = Math.random() * 100 + 'vw';
+            b.style.animationDelay = Math.random() * 15 + 's';
+            b.style.animationDuration = (Math.random() * 10 + 15) + 's';
+            b.style.opacity = '0.9';
+            
+            document.getElementById('balloons').appendChild(b);
+        }
+
+        // Add some random balloon sizes
+        document.querySelectorAll('.balloon').forEach((balloon, i) => {
+            if (i % 3 === 0) {
+                const size = 40 + Math.random() * 30;
+                balloon.style.width = size + 'px';
+                balloon.style.height = (size * 1.3) + 'px';
+            }
+        });
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                if (document.activeElement === cover || !document.activeElement) {
+                    openBook();
+                }
+            }
+            if (e.key === 'Escape' && opened) {
+                cover.classList.remove('opened');
+                opened = false;
+                audio.pause();
+                audio.currentTime = 0;
+                soundIcon.textContent = '🎵';
+                document.getElementById('message').style.opacity = '0';
+            }
+            
+            // Volume controls with arrow keys
+            if (e.key === 'ArrowUp' && audio.volume < 1) {
+                e.preventDefault();
+                audio.volume = Math.min(1, audio.volume + 0.1);
+                volumeSlider.value = audio.volume;
+            }
+            if (e.key === 'ArrowDown' && audio.volume > 0) {
+                e.preventDefault();
+                audio.volume = Math.max(0, audio.volume - 0.1);
+                volumeSlider.value = audio.volume;
+            }
+        });
+
+        // Handle visibility change to pause audio when tab is not active
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !audio.paused) {
+                audio.pause();
+                soundIcon.textContent = '🔇';
+            }
+        });
+
+        // Debug: Log when pages become visible
+        const pages = document.getElementById('pages');
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'style') {
+                    console.log('Pages opacity:', pages.style.opacity);
+                    console.log('Pages computed opacity:', getComputedStyle(pages).opacity);
+                }
+            });
+        });
+        
+        observer.observe(pages, { attributes: true });
     </script>
 </body>
 </html>
